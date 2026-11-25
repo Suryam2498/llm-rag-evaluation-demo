@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 from statistics import mean
 
@@ -110,11 +111,20 @@ def main(argv: list[str] | None = None) -> int:
     pipeline = RagPipeline(get_llm(), Retriever(load_chunks(args.kb)), k=args.k)
     judge = get_llm(os.getenv("JUDGE_MODEL_ID") or None)
     report = evaluate(pipeline, judge, load_eval_set(args.eval_set))
+    report["meta"] = {
+        "model_id": getattr(pipeline.llm, "model_id", ""),
+        "judge_model_id": getattr(judge, "model_id", ""),
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "cases": len(report["rows"]),
+    }
+
+    from .html_report import render_html
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     (out / "eval_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     (out / "eval_report.md").write_text(to_markdown(report), encoding="utf-8")
+    (out / "eval_report.html").write_text(render_html(report), encoding="utf-8")
     print(to_markdown(report))
 
     failures = failed_checks(report["summary"])

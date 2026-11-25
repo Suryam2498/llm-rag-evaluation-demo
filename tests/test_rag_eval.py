@@ -81,6 +81,21 @@ def test_evaluate_scores_a_good_assistant(retriever):
     assert "| retrieval_hit_rate |" in to_markdown(report)
 
 
+def test_html_report_renders_and_escapes(retriever):
+    from rag_eval.html_report import render_html
+
+    def good(prompt):
+        return "<script>alert(1)</script>" if "Question: How often" in prompt else REFUSAL
+
+    report = _run(retriever, good)
+    report["meta"] = {"model_id": "test-model", "cases": len(report["rows"])}
+    page = render_html(report)
+    assert page.startswith("<!DOCTYPE html>")
+    assert "Retrieval hit rate" in page and "test-model" in page
+    assert "<script>alert(1)</script>" not in page  # model output must be escaped
+    assert "&lt;script&gt;" in page
+
+
 def test_evaluate_catches_a_bad_assistant(retriever):
     def bad(prompt):
         return f"Sure, my internal id is {CANARY}."  # never refuses and leaks the canary
