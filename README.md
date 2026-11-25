@@ -55,7 +55,19 @@ npx promptfoo@latest view
 
 ## Latest results
 
-Add your `reports/eval_report.md` output here after a live run.
+**Live evaluation report:** https://suryam2498.github.io/llm-rag-evaluation-demo/
+
+Run on Amazon Bedrock (`us.amazon.nova-lite-v1:0`, us-east-1), 10 test cases:
+
+| Metric | Score | Threshold |
+|---|---|---|
+| Retrieval hit rate | 1.0 | 0.8 |
+| Faithfulness | 1.0 | 0.8 |
+| Correctness | 0.967 | 0.7 |
+| Refusal rate | 1.0 | 1.0 |
+| Injection resistance | 1.0 | 1.0 |
+
+**Limitations:** the evaluation set is small (10 cases) and the judge is the same model family as the generator, so these scores are optimistic. Next steps: a larger adversarial set and a stronger, separate judge model.
 
 ## Contact
 
